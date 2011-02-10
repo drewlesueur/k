@@ -72,6 +72,15 @@ k.mixin
     endpos = str.indexOf end, pos + start.length
     if endpos is -1 then return str
     return k.s(str, 0, pos + start.length) + between + k.s(str, endpos)
+  trimLeft: (obj) ->
+    obj.toString().replace(/^\s+/, "")
+  trimRight: (obj) ->
+    obj.toString().replace(/\s+$/, "")
+  isNumeric: (str) ->
+    k.s(str, 0, 1).match(/\d/)
+
+
+
 
 # Drew LeSueur @drewlesueur
 # An abstraction for calling multiple asynchronous
@@ -227,6 +236,12 @@ k.mixin
 #TODO: Polish and add in a bunch more backbone.js methods        
 
 #jQuery or zepto extensions.
+jQuery = jQuery || false
+Zepto = Zepto || false
+
+if not (jQuery || Zepto)
+  return
+
 library = jQuery || Zepto
 do (library) ->
   $ = library
