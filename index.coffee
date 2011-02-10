@@ -1,3 +1,4 @@
+root = this
 makeLikeUnderscore = () ->
   like_ = (o) ->
     like_.currentObject = o
@@ -21,7 +22,16 @@ makeLikeUnderscore = () ->
           else
             ret
   return like_
-k = window.k = makeLikeUnderscore()
+k = makeLikeUnderscore()
+
+if (typeof exports != "undefined")
+  exports = k
+  k.k = k
+else
+  root.k = k  
+
+k.VERSION = '0.1.0'
+
 k.mixin
   s: (val, start, end) ->
     need_to_join = false
@@ -49,7 +59,7 @@ k.mixin
       ret
 
   startsWith: (str, with_what) ->
-    k.s str, 0, with_what.lenght == with_what
+    k.s str, 0, with_what.length == with_what
   
   rnd: (low, high) -> Math.floor(Math.random() * (high-low+1)) + low
 
@@ -212,7 +222,9 @@ k.mixin
       if member.__cid == item.__cid
         o.splice key, 1 
         k(o).trigger "remove", item, o
-        
+
+
+#TODO: Polish and add in a bunch more backbone.js methods        
 
 #jQuery or zepto extensions.
 library = jQuery || Zepto
