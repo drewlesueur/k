@@ -44,7 +44,7 @@ k.mixin
     else
       start = val.length + start
     
-    if end == null
+    if _.isUndefined(end)
       ret = val.slice start
     else
       if end < 0
@@ -59,7 +59,7 @@ k.mixin
       ret
 
   startsWith: (str, with_what) ->
-    k.s str, 0, with_what.length == with_what
+    k.s(str, 0, with_what.length) == with_what
   
   rnd: (low, high) -> Math.floor(Math.random() * (high-low+1)) + low
 

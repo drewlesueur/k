@@ -62,7 +62,7 @@
       if (start >= 0) {} else {
         start = val.length + start;
       }
-      if (end === null) {
+      if (_.isUndefined(end)) {
         ret = val.slice(start);
       } else {
         if (end < 0) {
@@ -79,7 +79,7 @@
       }
     },
     startsWith: function(str, with_what) {
-      return k.s(str, 0, with_what.length === with_what);
+      return k.s(str, 0, with_what.length) === with_what;
     },
     rnd: function(low, high) {
       return Math.floor(Math.random() * (high - low + 1)) + low;
