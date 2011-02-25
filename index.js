@@ -1,8 +1,8 @@
 (function() {
-  var Zepto, exports, jQuery, k, library, makeLikeUnderscore, root, _m, _p;
+  var exports, k, library, m, makeLikeUnderscore, p, root;
   var __slice = Array.prototype.slice;
   root = this;
-  makeLikeUnderscore = function() {
+  makeLikeUnderscore = function(varName) {
     var like_;
     like_ = function(o) {
       like_.currentObject = o;
@@ -39,6 +39,11 @@
         })(name, func));
       }
       return _results;
+    };
+    like_["previous" + varName] = root[varName];
+    like_.noConflict = function() {
+      root[varName] = like_["previous" + varName];
+      return like_;
     };
     return like_;
   };
@@ -139,8 +144,8 @@
   k.mixin({
     makeLikeUnderscore: makeLikeUnderscore
   });
-  _p = k._p = window._p = makeLikeUnderscore();
-  k._p = _p;
+  p = k.p = window.p = makeLikeUnderscore();
+  k.p = p;
   k.metaInfo = {};
   k.mixin({
     "class": function(obj) {
@@ -149,7 +154,7 @@
       props = [];
       for (key in obj) {
         val = obj[key];
-        if (key in _p) {
+        if (key in p) {
           continue;
         }
         if (_.isFunction(val)) {
@@ -206,7 +211,7 @@
       name = methodNames[_i];
       _fn(name);
     }
-    return _p.mixin(mixins);
+    return p.mixin(mixins);
   };
   k.addPolymorphicProps = function(propNames) {
     var mixins, name, _i, _len;
@@ -217,20 +222,20 @@
         return k.meta(o).type[name];
       };
     }
-    return _p.mixin(mixins);
+    return p.mixin(mixins);
   };
-  window._m = _m = k.meta;
+  window.m = m = k.meta;
   k.mixin({
     bind: function(o, event, callback) {
       var calls, list, mo;
-      mo = _m(o);
+      mo = m(o);
       calls = mo._callbacks || (mo._callbacks = {});
       list = mo._callbacks[event] || (mo._callbacks[event] = []);
       return list.push(callback);
     },
     unbind: function(o, event, callback) {
       var calls, func, index, list, mo, _len;
-      mo = _m(o);
+      mo = m(o);
       if (!event) {
         mo._callbacks = {};
       } else if ((calls = mo._callbacks)) {
@@ -255,7 +260,7 @@
     trigger: function() {
       var allList, calls, event, func, index, list, mo, o, restOfArgs, _len, _len2, _results;
       o = arguments[0], event = arguments[1], restOfArgs = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-      mo = _m(o);
+      mo = m(o);
       calls = mo._callbacks;
       if (!calls) {
         return o;
@@ -279,13 +284,36 @@
     }
   });
   k.mixin({
+    set: function(o, attrs, options) {
+      var attr, val;
+      options = options || {};
+      if ((!options.silent) && p(o).validate && (!p(o)._performValidation(attrs, options))) {
+        return false;
+      }
+      for (attr in attrs) {
+        val = attrs[val];
+        if (!_.isEqual(o[attr], val)) {
+          o[attr] = val;
+          if (!options.silent) {
+            m(o)._changed = true;
+            p(o).trigger("change:" + attr, o, val, options);
+          }
+        }
+      }
+      if (!options.silent && m(o)._changed) {
+        p(o).change(options);
+      }
+      return o;
+    }
+  });
+  k.mixin({
     initialize: function(o) {
-      return _m(o)._byCid = {};
+      return m(o)._byCid = {};
     },
     add: function(o, item) {
       var mo;
       o.push(item);
-      mo = _m(o);
+      mo = m(o);
       if (!mo._byCid) {
         mo._byCid = {};
       }
@@ -295,7 +323,7 @@
     },
     remove: function(o, item) {
       var key, member, mo, _len, _results;
-      mo = _m(o);
+      mo = m(o);
       if (!mo._byCid) {
         return;
       }
@@ -310,8 +338,6 @@
       return _results;
     }
   });
-  jQuery = jQuery || false;
-  Zepto = Zepto || false;
   if (!(jQuery || Zepto)) {
     return;
   }

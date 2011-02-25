@@ -1,5 +1,5 @@
-root = this
-makeLikeUnderscore = () ->
+root = this #should be `window` on browser
+makeLikeUnderscore = (varName) ->
   like_ = (o) ->
     like_.currentObject = o
     return like_.methods
@@ -21,7 +21,11 @@ makeLikeUnderscore = () ->
             like_.methods
           else
             ret
-  return like_
+  like_["previous" + varName] = root[varName]
+  like_.noConflict = () ->
+    root[varName] = like_["previous" + varName]
+    like_
+  like_
 k = makeLikeUnderscore()
 
 if (typeof exports != "undefined")
@@ -128,15 +132,15 @@ k.mixin # underscore.js mixin
 #
 
 k.mixin makeLikeUnderscore: makeLikeUnderscore
-_p = k._p = window._p = makeLikeUnderscore()
-k._p = _p
+p = k.p = window.p = makeLikeUnderscore()
+k.p = p
 k.metaInfo = {}
 k.mixin
   class: (obj) ->
     funcs = []
     props = []
     for key, val of obj
-      if key of _p then continue
+      if key of p then continue
       if _.isFunction val
         funcs.push key
       else 
@@ -164,24 +168,24 @@ k.addPolymorphicMethods = (methodNames) ->
   mixins = {}
   for name in methodNames
     do(name) -> mixins[name] = (o, args...) -> k.meta(o).type[name] o, args...
-  _p.mixin mixins
+  p.mixin mixins
 k.addPolymorphicProps = (propNames) -> #static attributes
   mixins = {}
   for name in propNames
     mixins[name] = (o) -> k.meta(o).type[name]
-  _p.mixin mixins
-window._m = _m = k.meta
+  p.mixin mixins
+window.m = m = k.meta
 
 
 k.mixin
   bind: (o, event, callback) ->
-    mo = _m(o)
+    mo = m(o)
     calls = mo._callbacks or (mo._callbacks = {})
     list = mo._callbacks[event] or  (mo._callbacks[event] = [])
     list.push callback
 
   unbind: (o, event, callback) ->
-    mo = _m(o)
+    mo = m(o)
     if not event
       mo._callbacks = {}
     else if (calls = mo._callbacks) 
@@ -197,7 +201,7 @@ k.mixin
     return o
 
   trigger: (o, event, restOfArgs...) ->
-    mo = _m(o)
+    mo = m(o)
     calls = mo._callbacks
     if not calls then return o
     list = calls[event]
@@ -211,19 +215,35 @@ k.mixin
 
 
 #simple array with adding and removing
+
+
+k.mixin
+  set: (o, attrs, options) ->
+    options = options || {}
+    if (not options.silent) and p(o).validate and (not p(o)._performValidation(attrs, options)) then return false
+    for attr of attrs
+      val = attrs[val]
+      if not _.isEqual(o[attr], val)
+        o[attr] = val
+        if not options.silent
+          m(o)._changed = true
+          p(o).trigger "change:" + attr, o, val, options
   
+    if not options.silent and m(o)._changed then p(o).change options
+    return o
+
 k.mixin
   initialize: (o) ->
-    _m(o)._byCid = {}
+    m(o)._byCid = {}
   add: (o, item) ->
     o.push item
-    mo = _m(o)
+    mo = m(o)
     if not mo._byCid then mo._byCid = {}
     mo._byCid[item.__cid] = item
     k(o).trigger "add", item, o  
     return o
   remove: (o, item) ->
-    mo = _m(o)
+    mo = m(o)
     if not mo._byCid then return
     if not (item.__cid of mo._byCid)
       return false
@@ -232,16 +252,11 @@ k.mixin
         o.splice key, 1 
         k(o).trigger "remove", item, o
 
-
 #TODO: Polish and add in a bunch more backbone.js methods        
 
 #jQuery or zepto extensions.
-jQuery = jQuery || false
-Zepto = Zepto || false
-
 if not (jQuery || Zepto)
   return
-
 library = jQuery || Zepto
 do (library) ->
   $ = library
