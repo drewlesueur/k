@@ -148,18 +148,19 @@ k.mixin
     k.addPolymorphicMethods funcs
     k.addPolymorphicProps props
     obj
-  new: (type, o, extra) ->
-    extra = extra || {}
+  new: (type, rest...) ->
+    extra = {}
     if type then extra.type = type
-    o = o or {}
+    o = {}
     metaO = k.meta(o)
     _.extend metaO, extra
-    if metaO.type and metaO.type.initialize then metaO.type.initialize o
+    if metaO.type and metaO.type.initialize then metaO.type.initialize o, rest...
     o
+    
   reverseMeta: (cid) -> k.metaInfo[cid].record #meybe do this a different way
   meta: (o) -> 
-    metaO =  k.metaInfo[o.__cid]
-    if metaO then return metaO
+    if o.__cid? and k.metaInfo[o.__cid]
+      return k.metaInfo[o.__cid]
     cid = _.uniqueId()
     o.__cid = cid
     return k.metaInfo[cid] = record: o
@@ -180,9 +181,12 @@ window.m = m = k.meta
 k.mixin
   bind: (o, event, callback) ->
     mo = m(o)
+    console.log "cid is #{o.__cid}"
+    mo._callbacks = mo._callbacks || {}
     calls = mo._callbacks or (mo._callbacks = {})
     list = mo._callbacks[event] or  (mo._callbacks[event] = [])
     list.push callback
+    return o
 
   unbind: (o, event, callback) ->
     mo = m(o)
@@ -202,7 +206,11 @@ k.mixin
 
   trigger: (o, event, restOfArgs...) ->
     mo = m(o)
+    console.log "triggering event" + event
+    console.log "cid is #{o.__cid}"
     calls = mo._callbacks
+    console.log "calls are "
+    console.log calls
     if not calls then return o
     list = calls[event]
     if list
@@ -218,18 +226,23 @@ k.mixin
 
 
 k.mixin
+  change: (o, options) ->
+    k(o).trigger "change", o, options
+    m(o)._previousAttibutes = _.clone o
+    m(o).changed = false
+
   set: (o, attrs, options) ->
     options = options || {}
     if (not options.silent) and p(o).validate and (not p(o)._performValidation(attrs, options)) then return false
-    for attr of attrs
-      val = attrs[val]
+    for attr, val of attrs
+      console.log o[attr], val
       if not _.isEqual(o[attr], val)
         o[attr] = val
         if not options.silent
           m(o)._changed = true
-          p(o).trigger "change:" + attr, o, val, options
+          k(o).trigger "change:" + attr, o, val, options
   
-    if not options.silent and m(o)._changed then p(o).change options
+    if not options.silent and m(o)._changed then k(o).change options
     return o
 
 k.mixin
@@ -255,14 +268,13 @@ k.mixin
 #TODO: Polish and add in a bunch more backbone.js methods        
 
 #jQuery or zepto extensions.
-if not (jQuery || Zepto)
+if not (root['jQuery'] || root['Zepto'])
   return
 library = jQuery || Zepto
 do (library) ->
   $ = library
   $.fn.dragsimple = (options) ->
     el = this 
-    console.log el
     $(el).bind "mousedown", (e) ->
       obj = this
       e.preventDefault()

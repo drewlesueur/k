@@ -167,17 +167,18 @@
       k.addPolymorphicProps(props);
       return obj;
     },
-    "new": function(type, o, extra) {
-      var metaO;
-      extra = extra || {};
+    "new": function() {
+      var extra, metaO, o, rest, type, _ref;
+      type = arguments[0], rest = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      extra = {};
       if (type) {
         extra.type = type;
       }
-      o = o || {};
+      o = {};
       metaO = k.meta(o);
       _.extend(metaO, extra);
       if (metaO.type && metaO.type.initialize) {
-        metaO.type.initialize(o);
+        (_ref = metaO.type).initialize.apply(_ref, [o].concat(__slice.call(rest)));
       }
       return o;
     },
@@ -185,10 +186,9 @@
       return k.metaInfo[cid].record;
     },
     meta: function(o) {
-      var cid, metaO;
-      metaO = k.metaInfo[o.__cid];
-      if (metaO) {
-        return metaO;
+      var cid;
+      if ((o.__cid != null) && k.metaInfo[o.__cid]) {
+        return k.metaInfo[o.__cid];
       }
       cid = _.uniqueId();
       o.__cid = cid;
@@ -229,9 +229,12 @@
     bind: function(o, event, callback) {
       var calls, list, mo;
       mo = m(o);
+      console.log("cid is " + o.__cid);
+      mo._callbacks = mo._callbacks || {};
       calls = mo._callbacks || (mo._callbacks = {});
       list = mo._callbacks[event] || (mo._callbacks[event] = []);
-      return list.push(callback);
+      list.push(callback);
+      return o;
     },
     unbind: function(o, event, callback) {
       var calls, func, index, list, mo, _len;
@@ -261,7 +264,11 @@
       var allList, calls, event, func, index, list, mo, o, restOfArgs, _len, _len2, _results;
       o = arguments[0], event = arguments[1], restOfArgs = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
       mo = m(o);
+      console.log("triggering event" + event);
+      console.log("cid is " + o.__cid);
       calls = mo._callbacks;
+      console.log("calls are ");
+      console.log(calls);
       if (!calls) {
         return o;
       }
@@ -284,6 +291,11 @@
     }
   });
   k.mixin({
+    change: function(o, options) {
+      k(o).trigger("change", o, options);
+      m(o)._previousAttibutes = _.clone(o);
+      return m(o).changed = false;
+    },
     set: function(o, attrs, options) {
       var attr, val;
       options = options || {};
@@ -291,17 +303,18 @@
         return false;
       }
       for (attr in attrs) {
-        val = attrs[val];
+        val = attrs[attr];
+        console.log(o[attr], val);
         if (!_.isEqual(o[attr], val)) {
           o[attr] = val;
           if (!options.silent) {
             m(o)._changed = true;
-            p(o).trigger("change:" + attr, o, val, options);
+            k(o).trigger("change:" + attr, o, val, options);
           }
         }
       }
       if (!options.silent && m(o)._changed) {
-        p(o).change(options);
+        k(o).change(options);
       }
       return o;
     }
@@ -338,7 +351,7 @@
       return _results;
     }
   });
-  if (!(jQuery || Zepto)) {
+  if (!(root['jQuery'] || root['Zepto'])) {
     return;
   }
   library = jQuery || Zepto;
@@ -348,7 +361,6 @@
     return $.fn.dragsimple = function(options) {
       var el;
       el = this;
-      console.log(el);
       $(el).bind("mousedown", function(e) {
         var mousemove, mouseup, obj, parent_offset_left, parent_offset_top, start_offset_left, start_offset_top;
         obj = this;
