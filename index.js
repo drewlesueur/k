@@ -112,6 +112,9 @@
     },
     isNumeric: function(str) {
       return k.s(str, 0, 1).match(/\d/);
+    },
+    capitalize: function(str) {
+      return str.charAt(0).toUpperCase() + str.substring(1).toLowerCase();
     }
   });
   k.mixin({
@@ -229,7 +232,6 @@
     bind: function(o, event, callback) {
       var calls, list, mo;
       mo = m(o);
-      console.log("cid is " + o.__cid);
       mo._callbacks = mo._callbacks || {};
       calls = mo._callbacks || (mo._callbacks = {});
       list = mo._callbacks[event] || (mo._callbacks[event] = []);
@@ -264,11 +266,7 @@
       var allList, calls, event, func, index, list, mo, o, restOfArgs, _len, _len2, _results;
       o = arguments[0], event = arguments[1], restOfArgs = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
       mo = m(o);
-      console.log("triggering event" + event);
-      console.log("cid is " + o.__cid);
       calls = mo._callbacks;
-      console.log("calls are ");
-      console.log(calls);
       if (!calls) {
         return o;
       }
@@ -304,7 +302,6 @@
       }
       for (attr in attrs) {
         val = attrs[attr];
-        console.log(o[attr], val);
         if (!_.isEqual(o[attr], val)) {
           o[attr] = val;
           if (!options.silent) {

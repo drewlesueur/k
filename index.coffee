@@ -83,7 +83,8 @@ k.mixin
   isNumeric: (str) ->
     k.s(str, 0, 1).match(/\d/)
 
-
+  capitalize: (str) ->
+    str.charAt(0).toUpperCase() + str.substring(1).toLowerCase();
 
 
 # Drew LeSueur @drewlesueur
@@ -181,7 +182,6 @@ window.m = m = k.meta
 k.mixin
   bind: (o, event, callback) ->
     mo = m(o)
-    console.log "cid is #{o.__cid}"
     mo._callbacks = mo._callbacks || {}
     calls = mo._callbacks or (mo._callbacks = {})
     list = mo._callbacks[event] or  (mo._callbacks[event] = [])
@@ -206,11 +206,7 @@ k.mixin
 
   trigger: (o, event, restOfArgs...) ->
     mo = m(o)
-    console.log "triggering event" + event
-    console.log "cid is #{o.__cid}"
     calls = mo._callbacks
-    console.log "calls are "
-    console.log calls
     if not calls then return o
     list = calls[event]
     if list
@@ -235,7 +231,6 @@ k.mixin
     options = options || {}
     if (not options.silent) and p(o).validate and (not p(o)._performValidation(attrs, options)) then return false
     for attr, val of attrs
-      console.log o[attr], val
       if not _.isEqual(o[attr], val)
         o[attr] = val
         if not options.silent
