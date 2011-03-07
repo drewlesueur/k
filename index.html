@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+<script src="index2.js"></script>
+<script>
+
+a = {"name": "drew"}
+//k(a)("name", "Drew lesueur")
+
+console.log(k(a)("bind"))
+
+
+k(a)("bind")("error", function(){
+  console.log("say whoo. there was an error")
+})
+
+k(a)("save")
+
+k.bind(k, "before_get", function(k, obj, var_name){
+  if (!(var_name in obj)) {
+    type = k.m(obj).type
+    if (var_name in type) {
+      k.m(obj).return_value = type[var_name]
+    }
+  }
+})
+
+k.m(a).type = {"save" : "fun"}
+
+console.log(k(a)("save"))
+
+k(a)("info", {"eye": "blue"})
+console.log(k.c(a)("info")("eye"))
+
+
+
+
+
+</script>
+</head>
+<body>
+</body>
+</html>
+
