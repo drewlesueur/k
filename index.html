@@ -41,10 +41,42 @@ console.log(oa)
 console.log(a('meta')())
 
 a("bind", "say_what", function(){
-  alert("say what")
+  console.log("WHAT")
 })
 
 a("trigger", "say_what")
+
+
+a('bind', 'method_missing', function(){
+  console.log("missing")
+})
+
+
+console.log(a('meta')())
+a('meta')('x=', function(){})
+console.log(a('meta')('.x')())
+
+k.bind_before(k, "method_missing",
+function(func, obj, info){
+  console.log("say who")
+  console.log(info)
+  console.log(obj)
+  meta = k.meta(obj)
+  if (meta.type) {
+    
+    k.meta(obj).return_value =
+    meta.type[info.key]
+    meta.stop_propagation = true
+  }
+ 
+
+})
+
+a('meta')('Drew=', 'lesueur')
+a('meta')('type=', {'gunn': 1})
+
+
+console.log(a("gunn")())
 
 </script>
 </head>

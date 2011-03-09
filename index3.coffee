@@ -22,9 +22,6 @@ k_maker = (var_name) ->
     list.unshift callback
     return o
   bind = (o, event, callback) ->
-    console.log "the event is"
-    console.log o
-    console.log event
     mo = m(o)
     mo._callbacks = mo._callbacks || {}
     calls = mo._callbacks or (mo._callbacks = {})
@@ -126,6 +123,11 @@ k_maker = (var_name) ->
     trigger obj, 'set', member, value
     return ret
   wrapped_type = "this_is_A_wrapped_type"
+  valueify = (obj) ->
+    if obj.type == wrapped_type
+      return obj.value
+    return obj
+    
   make_func = () ->
     func1 = (obj) ->
       if not (typeof obj == "object")
@@ -136,9 +138,7 @@ k_maker = (var_name) ->
       init(obj)
       ret = (args...) ->
         if args.length is 0
-          if obj.type == wrapped_type
-            return obj.value
-          return obj
+          return valueify obj
         else 
           # call a function here
           trigger func, 'call', obj, args...
@@ -160,6 +160,7 @@ k_maker = (var_name) ->
     console.log "tested!"
   func.sub = k_maker
   func.bind = bind
+  func.bind_before = bind_before
   func.trigger = trigger
   func.unbind = unbind
   func.s = s
@@ -190,7 +191,18 @@ k_maker = (var_name) ->
   bind func, "method_missing", (func, obj, info) -> 
     if var_name of func
       meta(obj).return_value = (obj, args...) ->
-        func[var_name](obj, args...)
+        func[var_name](valueify(obj), args...)
+
+
+  func.bind_before func, "method_missing", (func, obj, info) ->
+    console.log "missing in polym"
+    metao = meta(obj)
+    if (metao.type) 
+      metao.return_value = metao.type[info.key]
+      metao.stop_propagation = true
+    
+   
+
 
   return func
 
