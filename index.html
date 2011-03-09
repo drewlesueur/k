@@ -23,17 +23,28 @@ console.log(a("name")())
 
 
 
-oa.do_stuff = function(obj, x) {
+oa.log = function(obj, x) {
   console.log("the prop is" + obj[x])
 }
 
 console.log(a("age")())
 
-a("do_stuff" , 'age')("do_stuff", 'name')
+a("log" , 'age')("log", 'name')
 
 
+a("x=", '3')
 
+a("log", 'x')
+a("test")
+console.log(oa)
 
+console.log(a('meta')())
+
+a("bind", "say_what", function(){
+  alert("say what")
+})
+
+a("trigger", "say_what")
 
 </script>
 </head>

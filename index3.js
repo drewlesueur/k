@@ -1,11 +1,6 @@
 (function() {
   var exports, k, k_maker, root;
-  var __slice = Array.prototype.slice, __indexOf = Array.prototype.indexOf || function(item) {
-    for (var i = 0, l = this.length; i < l; i++) {
-      if (this[i] === item) return i;
-    }
-    return -1;
-  };
+  var __slice = Array.prototype.slice;
   root = this;
   k_maker = function(var_name) {
     var bind, bind_before, func, get, get_id, idCounter, init, m, make_func, meta, meta_obj, s, set, trigger, unbind, wrapped_type, _id;
@@ -37,6 +32,9 @@
     };
     bind = function(o, event, callback) {
       var calls, list, mo;
+      console.log("the event is");
+      console.log(o);
+      console.log(event);
       mo = m(o);
       mo._callbacks = mo._callbacks || {};
       calls = mo._callbacks || (mo._callbacks = {});
@@ -134,11 +132,11 @@
         ret = meta(obj).return_value;
       } else {
         if (!(member in obj)) {
-          trigger(obj, "error", {
+          trigger(obj, "method_missing", {
             key: member,
             message: "key doesnt exist"
           });
-          trigger(func, "error", obj, {
+          trigger(func, "method_missing", obj, {
             key: member,
             message: "key doesn't exist"
           });
@@ -157,7 +155,9 @@
       var ret, return_value;
       trigger(func, 'before_set', obj, member, value);
       trigger(obj, 'before_set', member, value);
-      if ("really_set" in meta(obj)) {
+      if ("really_set" in meta(obj) && meta(obj).really_set === false) {
+        delete meta(obj).really_set;
+      } else {
         return_value = obj[member] = value;
       }
       if ("return_value" in meta(obj)) {
@@ -209,6 +209,10 @@
       return func;
     };
     func.meta = func.m = meta;
+    func.test = function(obj) {
+      console.log(obj[_id]);
+      return console.log("tested!");
+    };
     func.sub = k_maker;
     func.bind = bind;
     func.trigger = trigger;
@@ -226,9 +230,9 @@
     bind(func, 'call', function() {
       var args, obj, ret;
       func = arguments[0], obj = arguments[1], var_name = arguments[2], args = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
-      console.log("varname is " + var_name);
       if (s(var_name, -1, 1) === "=") {
-        ret = set(obj, var_name, args[1]);
+        var_name = s(var_name, 0, -1);
+        ret = set(obj, var_name, args[0]);
       }
       if (s(var_name, 0, 1) === ".") {
         var_name = s(var_name, 1);
@@ -244,15 +248,13 @@
       }
       return meta(obj).return_value = ret;
     });
-    bind(func, "before_get", function() {
-      var args, obj;
-      func = arguments[0], obj = arguments[1], var_name = arguments[2], args = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
-      if (__indexOf.call(func, var_name) >= 0) {
-        meta(obj).return_value = function() {
-          args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    bind(func, "method_missing", function(func, obj, info) {
+      if (var_name in func) {
+        return meta(obj).return_value = function() {
+          var args;
+          obj = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
           return func[var_name].apply(func, [obj].concat(__slice.call(args)));
         };
-        return meta(obj).stop_propagation = true;
       }
     });
     return func;

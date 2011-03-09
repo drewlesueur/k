@@ -22,6 +22,9 @@ k_maker = (var_name) ->
     list.unshift callback
     return o
   bind = (o, event, callback) ->
+    console.log "the event is"
+    console.log o
+    console.log event
     mo = m(o)
     mo._callbacks = mo._callbacks || {}
     calls = mo._callbacks or (mo._callbacks = {})
@@ -95,8 +98,8 @@ k_maker = (var_name) ->
       ret = meta(obj).return_value
     else
       if not(member of obj)
-        trigger obj, "error", key: member, message: "key doesnt exist"
-        trigger func, "error", obj, key: member, message: "key doesn't exist"
+        trigger obj, "method_missing", key: member, message: "key doesnt exist"
+        trigger func, "method_missing", obj, key: member, message: "key doesn't exist"
         if "return_value" of meta(obj)
           ret = meta(obj).return_value
       else
@@ -109,8 +112,12 @@ k_maker = (var_name) ->
     trigger func, 'before_set', obj, member, value
     trigger obj, 'before_set', member, value
 
-    if "really_set" of meta(obj)
+    if "really_set" of meta(obj) and meta(obj).really_set == false
+      delete meta(obj).really_set
+    else
       return_value = obj[member] = value
+      
+      
     if "return_value" of meta(obj)
       ret = meta(obj).return_value
     else
@@ -148,6 +155,9 @@ k_maker = (var_name) ->
     root[var_name] = func["previous" + var_name]
     func
   func.meta = func.m = meta
+  func.test = (obj) ->
+    console.log obj[_id]
+    console.log "tested!"
   func.sub = k_maker
   func.bind = bind
   func.trigger = trigger
@@ -159,11 +169,11 @@ k_maker = (var_name) ->
 
   bind func, 'call', (func, obj, var_name, args...) ->
 
-    console.log "varname is #{var_name}" 
     # trigger a before_call event or something?!
 
     if s(var_name, -1, 1) == "="
-      ret = set(obj, var_name, args[1])
+      var_name = s(var_name, 0,-1)
+      ret = set(obj, var_name, args[0])
     if s(var_name, 0, 1) == "."
       var_name = s(var_name, 1)
       ret = get(obj, var_name)
@@ -177,12 +187,10 @@ k_maker = (var_name) ->
     meta(obj).return_value = ret
 
 
-
-  bind func, "before_get", (func, obj, var_name, args...) -> #left off here 
-    if var_name in func
-      meta(obj).return_value = (args...) ->
+  bind func, "method_missing", (func, obj, info) -> 
+    if var_name of func
+      meta(obj).return_value = (obj, args...) ->
         func[var_name](obj, args...)
-      meta(obj).stop_propagation = true
 
   return func
 
