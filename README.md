@@ -21,7 +21,8 @@ wrap the raw object like you would in jQuery
 
 You can chain calls together like underscore.js  
 But you calls are chained by default. You don't need to and can't call `chain`
-because they are always 'chained', use `()` (as in call the function)
+because they are always 'chained'  
+Use `()` (as in call the function) to get the value
 
 For example, this will equal the raw person
 
@@ -44,9 +45,9 @@ For example, this will equal the raw person
 
 ##Chaining
 
-  person("eye-color=", "blue")("hair-color=", "brown")
-  person("eye-color")() # --> blue
-  person("hair-color")() # --> blue
+    person("eye-color=", "blue")("hair-color=", "brown")
+    person("eye-color")() # --> blue
+    person("hair-color")() # --> blue
 
 
 ## Functions 
@@ -64,7 +65,7 @@ This will probably change to be the wrapped object soon...
      person "dye-hair", "green"
    
 Functions are called automatically. If you want to get a function without calling it, use a `.` in
-frot
+front
 
      hair_function = person ".dye-hair"
      hair_function("green")
@@ -77,17 +78,17 @@ Meta-Object. Every Object ever wrapped in `k` will have a meta object.
 
 for example
 
-  person('meta')()  # this returns the meta object
-  person('meta')('some_value=', 'some value goes here')
-  alert person('meta')('some_value')()
+    person('meta')()  # this returns the meta object
+    person('meta')('some_value=', 'some value goes here')
+    alert person('meta')('some_value')()
 
 You can also get the meta object like this
 
-  k.meta(raw_person)
+    k.meta(raw_person)
 
-  #so
+    #so
 
-  k.meta(raw_person).some_value = 'whatever'
+    k.meta(raw_person).some_value = 'whatever'
 
 
 
@@ -111,47 +112,19 @@ put the return value into the `return_value` member of the meta object
 
 There are events for
 
-    1. `before_set`
-    2. `set`
-    3. `before_get`
-    4. `get`
-    5. `method_missing`
+  1. `before_set`
+  2. `set`
+  3. `before_get`
+  4. `get`
+  5. `method_missing`
 
 
 ##TODO
 
-    1. like jQuery, make `k(k(obj))` be the same as `k(obj)` so you cant double wrap
-    2. Have the first parameter of functions be the wrapped object, not the raw object
-    3. More documentation
-    4. Possibly a `before_call` and `call` event
+  1. like jQuery, make `k(k(obj))` be the same as `k(obj)` so you cant double wrap
+  2. Have the first parameter of functions be the wrapped object, not the raw object
+  3. More documentation
+  4. Possibly a `before_call` and `call` event
 
 
 
-
-  
-
-
-
-    
-
-
-    name = obj '.name'
-    alert name() # --> alerts drew
-
-    obj '.age', 26
-
-
-    str = k("Drew  jajajaj")
-    str('replace', 'j', 'h')('replace', 'h', 'o')('replace', 'Drew', 'Santa Claus')
-    alert str()
-
-    obj 'bind', 'before_set', (e) ->
-      if e('.prop') == 'test'
-        e ('meta')('.return_val', "this is a test")
-        
-
-    obj '.test', 'not a test'
-
-    alert obj('.test')() # -> this is a test
-
-  
