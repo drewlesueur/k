@@ -1,36 +1,35 @@
 <!doctype html>
 <html>
 <head>
-<script src="index2.js"></script>
+<script src="http://inc.the.tl/underscore.js"></script>
+<script src="index3.js"></script>
 <script>
 
-a = {"name": "drew"}
+  a = {
+    "name": "drew lesueur",
+    'age': 27
+  }
 //k(a)("name", "Drew lesueur")
 
-console.log(k(a)("bind"))
+console.log("the original object is")
+console.log(a)
+oa = a
+a = k(a)
+console.log("the wrapped object is")
+//console.log(a)
+
+console.log("trying to get the name")
+console.log(a("name")())
 
 
-k(a)("bind")("error", function(){
-  console.log("say whoo. there was an error")
-})
 
-k(a)("save")
+oa.do_stuff = function(obj, x) {
+  console.log("the prop is" + obj[x])
+}
 
-k.bind(k, "before_get", function(k, obj, var_name){
-  if (!(var_name in obj)) {
-    type = k.m(obj).type
-    if (var_name in type) {
-      k.m(obj).return_value = type[var_name]
-    }
-  }
-})
+console.log(a("age")())
 
-k.m(a).type = {"save" : "fun"}
-
-console.log(k(a)("save"))
-
-k(a)("info", {"eye": "blue"})
-console.log(k.c(a)("info")("eye"))
+a("do_stuff" , 'age')("do_stuff", 'name')
 
 
 
