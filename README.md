@@ -22,7 +22,7 @@ Start out with regular object
 
 wrap the raw object like you would in jQuery
 
-    person = k person
+    person = k person_raw
 
 You can chain calls together like underscore.js  
 But you calls are chained by default. You don't need to and can't call `chain`
@@ -52,7 +52,7 @@ For example, this will equal the raw person
 
     person("eye-color=", "blue")("hair-color=", "brown")
     person("eye-color")() # --> blue
-    person("hair-color")() # --> blue
+    person("hair-color")() # --> brown
 
 
 ## Functions 
