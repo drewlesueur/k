@@ -3,7 +3,7 @@
   var __slice = Array.prototype.slice;
   root = this;
   k_maker = function(var_name) {
-    var bind, bind_before, func, get, get_id, idCounter, init, m, make_func, meta, meta_obj, s, set, trigger, unbind, wrapped_type, _id;
+    var bind, bind_before, func, get, get_id, idCounter, init, m, make_func, meta, meta_obj, s, set, trigger, unbind, valueify, wrapped_type, _id;
     idCounter = 0;
     get_id = function() {
       return idCounter++;
@@ -32,9 +32,6 @@
     };
     bind = function(o, event, callback) {
       var calls, list, mo;
-      console.log("the event is");
-      console.log(o);
-      console.log(event);
       mo = m(o);
       mo._callbacks = mo._callbacks || {};
       calls = mo._callbacks || (mo._callbacks = {});
@@ -170,6 +167,12 @@
       return ret;
     };
     wrapped_type = "this_is_A_wrapped_type";
+    valueify = function(obj) {
+      if (obj.type === wrapped_type) {
+        return obj.value;
+      }
+      return obj;
+    };
     make_func = function() {
       var func1;
       func1 = function(obj) {
@@ -185,10 +188,7 @@
           var args, return_value;
           args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
           if (args.length === 0) {
-            if (obj.type === wrapped_type) {
-              return obj.value;
-            }
-            return obj;
+            return valueify(obj);
           } else {
             trigger.apply(null, [func, 'call', obj].concat(__slice.call(args)));
             trigger.apply(null, [obj, 'call'].concat(__slice.call(args)));
@@ -215,6 +215,7 @@
     };
     func.sub = k_maker;
     func.bind = bind;
+    func.bind_before = bind_before;
     func.trigger = trigger;
     func.unbind = unbind;
     func.s = s;
@@ -253,8 +254,17 @@
         return meta(obj).return_value = function() {
           var args;
           obj = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-          return func[var_name].apply(func, [obj].concat(__slice.call(args)));
+          return func[var_name].apply(func, [valueify(obj)].concat(__slice.call(args)));
         };
+      }
+    });
+    func.bind_before(func, "method_missing", function(func, obj, info) {
+      var metao;
+      console.log("missing in polym");
+      metao = meta(obj);
+      if (metao.type) {
+        metao.return_value = metao.type[info.key];
+        return metao.stop_propagation = true;
       }
     });
     return func;
