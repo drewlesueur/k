@@ -3,6 +3,11 @@
 Playing with Backbone.js events, using underscore.js, thinking about fabjs, and thinking about ruby's 'everything-is-an-object' inspired me to
 make this 'dsl' for JavaScript. 
 
+I wanted to make JavaScript more dynamic, and also try to use a subset of JavaScripts features at the
+same time.
+I did not want to use any inheritance. I aslo did not want to use the `this` variable.
+
+
 I think of a dsl as 'Using a programming language in such a way that it looks like your using a
 different programming language than the one you are using'
 
