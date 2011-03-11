@@ -89,8 +89,8 @@ k_maker = (var_name) ->
       ret
 
   get = (obj, member) ->
-    trigger func, 'before_get', obj, member
     trigger obj, 'before_get', member
+    trigger func, 'before_get', obj, member
     if "return_value" of meta(obj)
       ret = meta(obj).return_value
     else
@@ -101,13 +101,13 @@ k_maker = (var_name) ->
           ret = meta(obj).return_value
       else
         ret = obj[member]
-    trigger func, 'get', obj, member
     trigger obj, 'get', member
+    trigger func, 'get', obj, member
     return ret
 
   set = (obj, member, value) ->
-    trigger func, 'before_set', obj, member, value
     trigger obj, 'before_set', member, value
+    trigger func, 'before_set', obj, member, value
 
     if "really_set" of meta(obj) and meta(obj).really_set == false
       delete meta(obj).really_set
@@ -119,10 +119,11 @@ k_maker = (var_name) ->
       ret = meta(obj).return_value
     else
       ret =  return_value
-    trigger func, 'set', obj, member, value
     trigger obj, 'set', member, value
+    trigger func, 'set', obj, member, value
     return ret
   wrapped_type = "this_is_A_wrapped_type"
+  marked_as_wrapped = "marked_as_wrapped"
   valueify = (obj) ->
     if obj.type == wrapped_type
       return obj.value
@@ -130,6 +131,8 @@ k_maker = (var_name) ->
     
   make_func = () ->
     func1 = (obj) ->
+      if _.isFunction(obj) and obj[marked_as_wrapped] == true
+        return obj
       if not (typeof obj == "object")
         obj = 
           type: wrapped_type
@@ -141,11 +144,13 @@ k_maker = (var_name) ->
           return valueify obj
         else 
           # call a function here
-          trigger func, 'call', obj, args...
           trigger obj, 'call', args...
+          trigger func, 'call', obj, args...
           return_value = meta(obj).return_value
           delete meta(obj).return_value
           return func(return_value)
+
+      ret[marked_as_wrapped] = true
       return ret
     init(func1)
     return func1
@@ -195,7 +200,6 @@ k_maker = (var_name) ->
 
 
   func.bind_before func, "method_missing", (func, obj, info) ->
-    console.log "missing in polym"
     metao = meta(obj)
     if (metao.type) 
       metao.return_value = metao.type[info.key]

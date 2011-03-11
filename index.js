@@ -3,7 +3,7 @@
   var __slice = Array.prototype.slice;
   root = this;
   k_maker = function(var_name) {
-    var bind, bind_before, func, get, get_id, idCounter, init, m, make_func, meta, meta_obj, s, set, trigger, unbind, valueify, wrapped_type, _id;
+    var bind, bind_before, func, get, get_id, idCounter, init, m, make_func, marked_as_wrapped, meta, meta_obj, s, set, trigger, unbind, valueify, wrapped_type, _id;
     idCounter = 0;
     get_id = function() {
       return idCounter++;
@@ -123,8 +123,8 @@
     };
     get = function(obj, member) {
       var ret;
-      trigger(func, 'before_get', obj, member);
       trigger(obj, 'before_get', member);
+      trigger(func, 'before_get', obj, member);
       if ("return_value" in meta(obj)) {
         ret = meta(obj).return_value;
       } else {
@@ -144,14 +144,14 @@
           ret = obj[member];
         }
       }
-      trigger(func, 'get', obj, member);
       trigger(obj, 'get', member);
+      trigger(func, 'get', obj, member);
       return ret;
     };
     set = function(obj, member, value) {
       var ret, return_value;
-      trigger(func, 'before_set', obj, member, value);
       trigger(obj, 'before_set', member, value);
+      trigger(func, 'before_set', obj, member, value);
       if ("really_set" in meta(obj) && meta(obj).really_set === false) {
         delete meta(obj).really_set;
       } else {
@@ -162,11 +162,12 @@
       } else {
         ret = return_value;
       }
-      trigger(func, 'set', obj, member, value);
       trigger(obj, 'set', member, value);
+      trigger(func, 'set', obj, member, value);
       return ret;
     };
     wrapped_type = "this_is_A_wrapped_type";
+    marked_as_wrapped = "marked_as_wrapped";
     valueify = function(obj) {
       if (obj.type === wrapped_type) {
         return obj.value;
@@ -177,6 +178,9 @@
       var func1;
       func1 = function(obj) {
         var ret;
+        if (_.isFunction(obj) && obj[marked_as_wrapped] === true) {
+          return obj;
+        }
         if (!(typeof obj === "object")) {
           obj = {
             type: wrapped_type,
@@ -190,13 +194,14 @@
           if (args.length === 0) {
             return valueify(obj);
           } else {
-            trigger.apply(null, [func, 'call', obj].concat(__slice.call(args)));
             trigger.apply(null, [obj, 'call'].concat(__slice.call(args)));
+            trigger.apply(null, [func, 'call', obj].concat(__slice.call(args)));
             return_value = meta(obj).return_value;
             delete meta(obj).return_value;
             return func(return_value);
           }
         };
+        ret[marked_as_wrapped] = true;
         return ret;
       };
       init(func1);
@@ -260,7 +265,6 @@
     });
     func.bind_before(func, "method_missing", function(func, obj, info) {
       var metao;
-      console.log("missing in polym");
       metao = meta(obj);
       if (metao.type) {
         metao.return_value = metao.type[info.key];
